@@ -1,0 +1,32 @@
+# Technical Requirements: Handl
+
+## Architecture
+React, TypeScript and Vite front end with a Node (Express) server for secure API calls.
+
+## Components
+- Homepage, LoginScreen, HouseholdFlow, WorkerFlow
+- KanpurMap (Google Maps with worker pins)
+- JobChatDrawer
+- kanpurWorkers.ts (dummy worker data)
+
+## AI
+Gemini API reads text, a voice transcript or a photo and returns worker type, urgency and a price range. For scrap photos it lists items and estimates price.
+
+## Maps
+Google Maps JavaScript API. The nearest worker is picked by distance. Tracking is simulated. Outside AI Studio, the map needs a billing-enabled Maps key.
+
+## Security
+API keys stay in environment variables. Only .env.example is committed.
+
+## Limitations
+Simulated OTP and tracking, estimated prices, photo accuracy depends on lighting.
+
+## Deployment
+- Google AI Studio: https://handlapp.ai.studio
+- Render: https://handl-mxib.onrender.com
+
+## Tools used
+Gemini, Google AI Studio, Google Maps Platform, Google Stitch, GitHub, Render
+
+## Planned
+Google Antigravity (code review and testing), Firebase (OTP login, database, hosting)
