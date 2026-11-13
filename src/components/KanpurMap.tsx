@@ -8,9 +8,15 @@ import {
   useApiLoadingStatus,
   useMap,
 } from '@vis.gl/react-google-maps';
+import { motion, useReducedMotion } from 'motion/react';
 import { Home, Navigation } from 'lucide-react';
 import { HouseholdLocation, WorkerProfile, WorkerTrade } from '../types';
 import { KANPUR_CENTER, TRADE_LABELS } from '../data/kanpurWorkers';
+import {
+  AnimatedTradeIcon,
+  PulsingLiveDot,
+  TRADE_STYLES,
+} from './TradeVisuals';
 
 interface KanpurMapProps {
   apiKey: string;
@@ -89,7 +95,7 @@ const MapLoadingGuard: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (status === APILoadingStatus.FAILED || status === APILoadingStatus.AUTH_FAILURE) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-[#F6F5FC] border border-slate-200 rounded-2xl p-6 text-center">
         <p className="text-sm font-medium text-slate-800">
           Map tiles could not load
         </p>
@@ -121,10 +127,12 @@ export const KanpurMap: React.FC<KanpurMapProps> = ({
   etaSecondsLeft,
   heightClassName = 'h-[310px] sm:h-[360px] lg:h-[540px]',
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   if (!apiKey) {
     return (
       <div
-        className={`${heightClassName} w-full rounded-2xl border border-slate-200 bg-slate-50 flex flex-col items-center justify-center p-6 text-center`}
+        className={`${heightClassName} w-full rounded-2xl border border-white/90 bg-white/80 backdrop-blur-xl shadow-[0_18px_45px_-22px_rgba(15,35,71,0.18)] flex flex-col items-center justify-center p-6 text-center`}
       >
         <p className="text-sm font-medium text-slate-700">
           Initializing Kanpur Map...
@@ -140,7 +148,7 @@ export const KanpurMap: React.FC<KanpurMapProps> = ({
 
   return (
     <div
-      className={`${heightClassName} w-full rounded-2xl border border-slate-200 overflow-hidden bg-slate-100 relative`}
+      className={`${heightClassName} w-full rounded-2xl border border-white/95 overflow-hidden bg-slate-100 relative shadow-[0_20px_48px_-22px_rgba(15,35,71,0.22)]`}
     >
       <APIProvider
         apiKey={apiKey}
@@ -173,19 +181,20 @@ export const KanpurMap: React.FC<KanpurMapProps> = ({
             >
               <div className="flex flex-col items-center">
                 <div className="px-2.5 py-1 rounded-lg bg-[#0F2347] text-white text-[11px] font-semibold shadow-md border border-white flex items-center gap-1.5 whitespace-nowrap">
-                  <Home className="w-3 h-3" />
+                  <Home className="w-3 h-3 text-orange-400" />
                   <span>{householdLocation.label}</span>
                 </div>
                 <div className="w-2.5 h-2.5 bg-[#0F2347] rotate-45 -mt-1.5 border-r border-b border-white" />
               </div>
             </AdvancedMarker>
 
-            {/* All 12 Kanpur workers when not in single-worker live tracking */}
+            {/* All 12 Kanpur workers with soft color per worker type */}
             {!isTracking &&
               workers.map((worker) => {
                 const isSelected = worker.id === selectedWorkerId;
                 const isHighlighted =
                   highlightedTrade === 'all' || worker.trade === highlightedTrade;
+                const tradeStyle = TRADE_STYLES[worker.trade];
 
                 return (
                   <AdvancedMarker
@@ -195,26 +204,36 @@ export const KanpurMap: React.FC<KanpurMapProps> = ({
                     zIndex={isSelected ? 50 : isHighlighted ? 25 : 10}
                     onClick={() => onSelectWorker?.(worker.id)}
                   >
-                    <button
+                    <motion.button
                       type="button"
+                      whileHover={shouldReduceMotion ? undefined : { scale: 1.07 }}
+                      whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
                       onClick={() => onSelectWorker?.(worker.id)}
-                      className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-transform shadow-sm whitespace-nowrap tabular-nums ${
+                      className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all shadow-sm whitespace-nowrap tabular-nums flex items-center gap-1.5 ${
                         isSelected
-                          ? 'bg-[#0F2347] text-white border-white scale-110 ring-2 ring-[#0F2347]/30'
+                          ? 'bg-[#0F2347] text-white border-[#EA580C] scale-110 ring-2 ring-[#EA580C]/35'
                           : isHighlighted
-                          ? 'bg-white text-slate-900 border-slate-300 hover:border-[#0F2347]'
+                          ? `${tradeStyle.pinBg} ${tradeStyle.pinText} ${tradeStyle.pinBorder} hover:border-[#0F2347]`
                           : 'bg-white/80 text-slate-400 border-slate-200'
                       }`}
                     >
-                      {worker.trade === 'kabadiwala'
-                        ? `${worker.initials} · Free`
-                        : `${worker.initials} · ₹${worker.priceInr}`}
-                    </button>
+                      {!isSelected && isHighlighted && (
+                        <AnimatedTradeIcon
+                          trade={worker.trade}
+                          sizeClassName="w-3 h-3"
+                        />
+                      )}
+                      <span>
+                        {worker.trade === 'kabadiwala'
+                          ? `${worker.initials} · Free`
+                          : `${worker.initials} · ₹${worker.priceInr}`}
+                      </span>
+                    </motion.button>
                   </AdvancedMarker>
                 );
               })}
 
-            {/* Live moving worker pin + route polyline after booking */}
+            {/* Live moving worker pin + pulsing dot + route polyline after booking */}
             {isTracking && activeBookedWorker && movingWorkerPos && (
               <>
                 <RoutePolyline
@@ -228,17 +247,34 @@ export const KanpurMap: React.FC<KanpurMapProps> = ({
                   title={`${activeBookedWorker.name} en route`}
                   zIndex={60}
                 >
-                  <div className="flex flex-col items-center">
-                    <div className="px-2.5 py-1.5 rounded-xl bg-white text-[#0F2347] border-2 border-[#0F2347] shadow-md text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
-                      <Navigation className="w-3 h-3 fill-[#0F2347]" />
+                  <motion.div
+                    initial={shouldReduceMotion ? false : { scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex flex-col items-center relative"
+                  >
+                    {!shouldReduceMotion && (
+                      <motion.div
+                        animate={{ scale: [1, 1.35, 1], opacity: [0.35, 0, 0.35] }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                        className="absolute -inset-1.5 rounded-xl bg-teal-400/35 pointer-events-none"
+                      />
+                    )}
+                    <div className="relative px-2.5 py-1.5 rounded-xl bg-white text-[#0F2347] border-2 border-teal-600 shadow-lg text-[11px] font-semibold flex items-center gap-1.5 whitespace-nowrap tabular-nums">
+                      <PulsingLiveDot />
+                      <Navigation className="w-3 h-3 fill-teal-600 text-teal-600" />
                       <span>{activeBookedWorker.name.split(' ')[0]}</span>
                       {typeof etaSecondsLeft === 'number' && etaSecondsLeft > 0 && (
-                        <span className="text-slate-500 font-medium">
+                        <span className="text-[#C2410C] font-semibold">
                           · {formatShortEta(etaSecondsLeft)}
                         </span>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 </AdvancedMarker>
               </>
             )}
