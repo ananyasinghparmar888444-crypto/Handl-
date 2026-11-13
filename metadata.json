@@ -1,0 +1,10 @@
+{
+  "name": "Handl",
+  "description": "Mobile-first home services and scrap pickup marketplace for Kanpur with AI triage, worker comparison, and live arrival tracking.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
