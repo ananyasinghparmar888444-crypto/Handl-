@@ -1,0 +1,34 @@
+# Product Requirements: Handl
+
+## Problem
+Millions of skilled local workers are on no app. Households find them by word of mouth, can't judge a fair price and get overcharged. Many workers can't type.
+
+## Users
+- Households needing repairs or scrap pickup
+- Local workers (plumber, electrician, carpenter, kabadiwala)
+
+## Goals
+- Find the nearest suitable worker in under a minute
+- Show a fair price range before booking
+- Build trust with ratings, Trust Scores and verified ticks
+
+## Built features
+1. Animated homepage
+2. Phone and OTP login (simulated)
+3. Request by text, voice or photo
+4. AI worker type, urgency and price range
+5. Worker comparison cards
+6. Map with worker tracking (simulated)
+7. Worker flow: Accept, On the way, Arrived, Done
+8. Two-way ratings and household Trust Score
+9. Chat, Cancel and SOS
+
+## Planned
+- Real SMS OTP (Firebase), real GPS, payments, regional-language voice
+- Google Antigravity for automated testing and code review
+
+## Business model
+Small commission per job, paid verified badges, yearly society plans
+
+## Future scope
+More trades, renovation-material resale, a work-history score for worker loans
